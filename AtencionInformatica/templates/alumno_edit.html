@@ -1,0 +1,7 @@
+<h1>Editar Alumno</h1>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Guardar</button>
+</form>
+<a href="{% url 'index' %}?id={{ form.instance.id }}" class="btn btn-secondary">Cancelar</a>
