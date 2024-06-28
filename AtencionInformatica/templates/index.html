@@ -1,39 +1,69 @@
-<h1>Atención Alumnos</h1>
-<table class="alumnosTabla">
-    <tr>
-        <th>Nombre</th>
-        <th>Apellido</th>
-        <th>Boleta</th>
-        <th>Plan</th>
-        <th>Asunto</th>
-        <th>Tipo</th>
-        <th>Descripción</th>
-    </tr>
-    <tr>
-        <td>{{ alumno.nombre }}</td>
-        <td>{{ alumno.apellido }}</td>
-        <td>{{ alumno.boleta }}</td>
-        <td>{{ alumno.plan }}</td>
-        <td>{{ alumno.asunto }}</td>
-        <td>{{ alumno.tipo }}</td>
-        <td>{{ alumno.descripcion }}</td>
-    </tr>
-</table>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Atención Alumnos</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Atención Alumnos</h1>
+    <table class="alumnosTabla">
+        <tr>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>Boleta</th>
+            <th>Plan</th>
+            <th>Asunto</th>
+            <th>Tipo</th>
+            <th>Descripción</th>
+        </tr>
+        <tr>
+            <td>{{ alumno.nombre }}</td>
+            <td>{{ alumno.apellido }}</td>
+            <td>{{ alumno.boleta }}</td>
+            <td>{{ alumno.plan }}</td>
+            <td>{{ alumno.asunto }}</td>
+            <td>{{ alumno.tipo }}</td>
+            <td>{{ alumno.descripcion }}</td>
+        </tr>
+    </table>
 
-<div class="navigation">
-    {% if prev_alumno %}
-        <a href="?id={{ prev_alumno.id }}" class="btn btn-primary">Anterior</a>
-    {% else %}
-        <button class="btn btn-primary" disabled>Anterior</button>
-    {% endif %}
+    <div class="navigation">
+        {% if prev_alumno %}
+            <a href="?id={{ prev_alumno.id }}" class="btn btn-primary">Anterior</a>
+        {% else %}
+            <button class="btn btn-primary" disabled>Anterior</button>
+        {% endif %}
 
-    {% if next_alumno %}
-        <a href="?id={{ next_alumno.id }}" class="btn btn-primary">Siguiente</a>
-    {% else %}
-        <button class="btn btn-primary" disabled>Siguiente</button>
-    {% endif %}
-</div>
+        {% if next_alumno %}
+            <a href="?id={{ next_alumno.id }}" class="btn btn-primary">Siguiente</a>
+        {% else %}
+            <button class="btn btn-primary" disabled>Siguiente</button>
+        {% endif %}
+    </div>
 
-<a href="{% url 'alumno_edit' alumno.id %}" class="btn btn-warning">Editar</a>
-<a href="{% url 'generate_docx' alumno.id %}" class="btn btn-success">Generar Folio</a>
+    <a href="{% url 'AtencionInformatica:alumno_edit' alumno.id %}">Editar</a>
+    <a href="{% url 'AtencionInformatica:generate_docx' alumno.id %}" class="btn btn-success">Generar Folio</a>
+
+    <h1>Últimos Registros</h1>
+    <form id="records-form" method="post" action="{% url 'AtencionInformatica:add_record_to_db' %}">
+        {% csrf_token %}
+        <div id="latest-records">
+            {% for record in records %}
+                <div>
+                    <input type="checkbox" name="record" value="{{ record|join:',' }}">
+                    {{ record.1 }} {{ record.9 }} - {{ record.2 }} <!-- Ajustar según las columnas de tus datos -->
+                </div>
+            {% endfor %}
+        </div>
+        <button type="submit">Agregar Seleccionados</button>
+    </form>
+
+    <!-- Opción 1: Usar un enlace -->
+    <a href="" class="btn btn-primary">Actualizar</a>
+
+    <!-- Opción 2: Usar un botón con JavaScript -->
+    <!--<button onclick="window.location.reload();" class="btn btn-primary">Actualizar</button>-->
+</body>
+</html>
+
 

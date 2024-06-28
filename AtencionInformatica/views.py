@@ -1,3 +1,4 @@
+import requests
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 from django.conf import settings
@@ -6,6 +7,8 @@ from .models import Alumno
 from .forms import AlumnoForm
 from docx import Document
 import os
+import json
+from django.utils import timezone
 
 def index(request):
     alumno_id = request.GET.get('id')
@@ -17,10 +20,26 @@ def index(request):
     next_alumno = Alumno.objects.filter(id__gt=alumno.id).order_by('id').first()
     prev_alumno = Alumno.objects.filter(id__lt=alumno.id).order_by('-id').first()
 
+    # Obtener los últimos registros
+    try:
+        response = requests.get(GOOGLE_SCRIPT_URL)
+        response.raise_for_status()
+        records = response.json()
+
+        # Verifica que la estructura del JSON sea la esperada
+        if not isinstance(records, list) or len(records) == 0:
+            raise ValueError("JSON no contiene una lista o está vacío")
+        if not isinstance(records[0], list):
+            raise ValueError("El primer elemento del JSON no es una lista")
+    except (requests.exceptions.RequestException, ValueError) as e:
+        print(f"Error fetching records: {e}")
+        records = []
+
     context = {
         'alumno': alumno,
         'next_alumno': next_alumno,
-        'prev_alumno': prev_alumno
+        'prev_alumno': prev_alumno,
+        'records': records,  # Asegúrate de incluir 'records' en el contexto
     }
     return render(request, 'index.html', context)
 
@@ -30,7 +49,7 @@ def alumno_edit(request, id):
         form = AlumnoForm(request.POST, instance=alumno)
         if form.is_valid():
             form.save()
-            return redirect(reverse('index') + f'?id={alumno.id}')
+            return redirect(reverse('AtencionInformatica:index') + f'?id={alumno.id}')
     else:
         form = AlumnoForm(instance=alumno)
     return render(request, 'alumno_edit.html', {'form': form})
@@ -83,3 +102,49 @@ def generate_docx(request, id):
         pass
 
     return response
+
+GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxK1mG1xFjrX-8fyouZfdSoZpVn6CAVk4kTGYFWv-PmBykd-IRRnwtABq8FI8i1njd6/exec'  # Reemplaza con la URL de tu script
+
+def add_record_to_db(request):
+    if request.method == 'POST':
+        records = request.POST.getlist('record')
+        for record in records:
+            fields = record.split(',')
+            try:
+                Alumno.objects.create(
+                    nombre=fields[1],
+                    apellido=fields[9],
+                    fecha=timezone.now(),
+                    boleta=int(fields[2]),  # Verifica que boleta sea un número entero
+                    email=fields[8],
+                    telefono=fields[3],
+                    plan=int(fields[4]),  # Verifica que plan sea un número entero
+                    asunto=fields[5],
+                    tipo=fields[6],
+                    descripcion=fields[7]
+                )
+            except (ValueError, IndexError) as e:
+                print(f"Error creating Alumno: {e}")
+                return render(request, 'AtencionInformatica/error.html', {'message': f'Error creating Alumno: {e}'})
+        return redirect('AtencionInformatica:index')
+
+    return render(request, 'AtencionInformatica/error.html', {'message': 'Invalid request method.'})
+
+def fetch_latest_records(request):
+    try:
+        response = requests.get(GOOGLE_SCRIPT_URL)
+        response.raise_for_status()  # Levanta un error para códigos de estado HTTP 4xx/5xx
+        
+        try:
+            records = response.json()  # Decodifica el JSON
+            # Verifica que la estructura del JSON sea la esperada
+            if not isinstance(records, list) or len(records) == 0:
+                raise ValueError("JSON does not contain a list or is empty")
+            if not isinstance(records[0], list):
+                raise ValueError("The first element of JSON is not a list")
+        except ValueError as e:  # Maneja errores de decodificación JSON
+            return render(request, 'AtencionInformatica/error.html', {'message': f'Error decoding JSON: {e}'})
+        
+        return render(request, 'AtencionInformatica/latest_records.html', {'records': records})
+    except requests.exceptions.RequestException as e:
+        return render(request, 'AtencionInformatica/error.html', {'message': f'Error fetching records from Google Sheets: {e}'})

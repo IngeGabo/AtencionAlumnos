@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Últimos Registros</title>
+</head>
+<body>
+    <h1>Últimos Registros</h1>
+    <form method="post" action="{% url 'AtencionInformatica:add_record_to_db' %}">
+        {% csrf_token %}
+        {% for record in records %}
+            <div>
+                <input type="checkbox" name="record" value="{{ record | join:',' }}">
+                {{ record.1 }} {{ record.9 }} - {{ record.2 }} <!-- Ajustar según las columnas de tus datos -->
+            </div>
+        {% endfor %}
+        <button type="submit">Agregar Seleccionados</button>
+    </form>
+    <a href="{% url 'AtencionInformatica:fetch_latest_records' %}">Actualizar</a>
+</body>
+</html>
