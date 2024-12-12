@@ -1,0 +1,232 @@
+/*Parte Trayectoria*/
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+.container2 {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
+}
+.semester-row {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 10px;
+}
+.semester {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr); /* Primeros 4 niveles con 8 columnas */
+    gap: 10px;
+}
+.semester-label {
+    padding: 10px;
+    border-radius: 20px;
+    color: black;
+    background-color: #cb6ce6;
+    font-weight: bold;
+    text-align: center;
+    min-height: 60px;
+    border: 2px dashed;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.subject {
+    padding: 10px;
+    border-radius: 20px; /* Borde redondeado */
+    color: black; /* Color del texto */
+    background-color: transparent; /* Fondo transparente */
+    font-weight: bold;
+    text-align: center;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 60px; /* Altura mínima para los botones */
+}
+.subject.empty {
+    background: transparent;
+    cursor: default;
+    border: none;
+}
+
+.green {
+    background-color: #c1ff72;
+}
+
+.yellow {
+    background-color: #fff245;
+}
+
+.orange {
+    background-color: #ffbd59;
+}
+
+.blue {
+    background-color: #38b6ff;
+}
+.green-border {
+    border: 2px dashed #7ed957; /* Verde más oscuro */
+}
+
+.yellow-border {
+    border: 2px dashed #ffbd59; /* Amarillo más oscuro */
+}
+
+.orange-border {
+    border: 2px dashed #ff3131; /* Naranja más oscuro */
+}
+
+.black-border {
+    border: 2px dashed #000; /* Púrpura más oscuro */
+}
+
+.blue-border {
+    border: 2px dashed #004aad; /* Rojo más oscuro */
+}
+
+.botonimagencompleta{
+    background: #fbca1f;
+    font-family: inherit;
+    padding: 0.6em 1.3em;
+    font-weight: 900;
+    font-size: 18px;
+    border: 3px solid black;
+    border-radius: 0.4em;
+    box-shadow: 0.1em 0.1em;
+    cursor: pointer;
+}
+.botonimagencompleta:hover{
+    transform: translate(-0.05em, -0.05em);
+    box-shadow: 0.15em 0.15em;
+}
+.botonimagencompleta:active{
+    transform: translate(0.05em, 0.05em);
+  box-shadow: 0.05em 0.05em;
+}
+.modal-container {
+    display: none;
+    background-color: rgba(0, 0, 0, 0.5); /* Color de fondo con opacidad */
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 100vw;
+    /*opacity: 0;*/
+    /* Puedes eliminar pointer-events: none si necesitas interacción */
+}
+.modal-container.show {
+    display: flex;
+}
+
+.modal {
+    background-color: white;
+    width: 600px;
+    max-width: 100%;
+    padding: 30px 50px;
+    border-radius: 5px;
+    text-align: center; /* Centrar el texto */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    position: relative; /* Para posicionar el botón de cerrar */
+}
+.modal img {
+    width: 100%; /* Ajustar el ancho de la imagen al 100% del contenedor */
+   /* max-width: 300px; /* Ancho máximo de 300px */
+    height: auto; /* Mantener la proporción de aspecto */
+    margin: 0 auto; /* Centrar la imagen */
+    padding-bottom: 20px;
+}
+.modal p{
+    padding-bottom: 20px;
+}
+
+.modal2 {
+    background-color: white;
+    width: 600px;
+    max-width: 100%;
+    padding: 30px 50px;
+    border-radius: 5px;
+    text-align: center; /* Centrar el texto */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    position: relative; /* Para posicionar el botón de cerrar */
+}
+.modal2 img {
+    width: 100%; /* Ajustar el ancho de la imagen al 100% del contenedor */
+    max-width: 300px; /* Ancho máximo de 300px */
+    height: auto; /* Mantener la proporción de aspecto */
+    margin: 0 auto; /* Centrar la imagen */
+    padding-bottom: 20px;
+}
+.modal3 {
+    background-color: white;
+    width: 80%;
+    max-width: 100%;
+    padding: 30px 50px;
+    border-radius: 5px;
+    text-align: center; /* Centrar el texto */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    position: relative; /* Para posicionar el botón de cerrar */
+}
+.modal3 img {
+    width: 100%; /* Ajustar el ancho de la imagen al 100% del contenedor */
+    height: auto; /* Mantener la proporción de aspecto */
+    margin: 0 auto; /* Centrar la imagen */
+    padding-bottom: 20px;
+}
+
+.close-btn{
+    background-color: #47a386;
+    border: 0;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    color: #fff;
+    font-size: 14px;
+    padding: 10px 25px;
+    bottom: 1px;
+    left: 50%;
+    transform: translateX(-50%);
+    position: absolute;
+    cursor: pointer;
+}
+
+
+@media (max-width: 1200px) {
+    .semester-row {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .semester {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr); /* Cambia a 4 columnas */
+        gap: 10px;
+    }
+    .semester-label {
+        grid-column: span 4; /* Ocupa las columnas adecuadas */
+    }
+}
+
+@media (max-width: 768px){
+    .semester {
+        grid-template-columns: repeat(2, 1fr); /* Cambia a 2 columnas */
+        gap: 10px;
+    }
+    .semester-label {
+        grid-column: span 2; /* Ocupa las columnas adecuadas */
+    }
+}
+
+@media (max-width: 480px){
+    .semester {
+        grid-template-columns: 1fr; /* Cambia a 1 columna */
+        gap: 10px;
+    }
+    .semester-label {
+        grid-column: span 1; /* Ocupa las columnas adecuadas */
+    }
+}

@@ -1,69 +1,155 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Atención Alumnos</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-</head>
-<body>
-    <h1>Atención Alumnos</h1>
-    <table class="alumnosTabla">
-        <tr>
-            <th>Nombre</th>
-            <th>Apellido</th>
-            <th>Boleta</th>
-            <th>Plan</th>
-            <th>Asunto</th>
-            <th>Tipo</th>
-            <th>Descripción</th>
-        </tr>
-        <tr>
-            <td>{{ alumno.nombre }}</td>
-            <td>{{ alumno.apellido }}</td>
-            <td>{{ alumno.boleta }}</td>
-            <td>{{ alumno.plan }}</td>
-            <td>{{ alumno.asunto }}</td>
-            <td>{{ alumno.tipo }}</td>
-            <td>{{ alumno.descripcion }}</td>
-        </tr>
-    </table>
+{% load static %}
+{% include 'encabezado.html' %}
 
-    <div class="navigation">
-        {% if prev_alumno %}
-            <a href="?id={{ prev_alumno.id }}" class="btn btn-primary">Anterior</a>
-        {% else %}
-            <button class="btn btn-primary" disabled>Anterior</button>
-        {% endif %}
+{% block content %}
 
-        {% if next_alumno %}
-            <a href="?id={{ next_alumno.id }}" class="btn btn-primary">Siguiente</a>
-        {% else %}
-            <button class="btn btn-primary" disabled>Siguiente</button>
-        {% endif %}
+<!-- Barra de búsqueda -->
+<form method="get" action="{% url 'AtencionInformatica:index' %}" class="search-container">
+    <div class="search-bar">
+        <input type="text" name="q" class="search-input" placeholder="Buscar alumnos..." />
+        <!-- Botón con icono SVG -->
+        <button type="submit" class="search-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
+                <path d="M0 0h24v24H0z" fill="none"></path>
+                <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zM9.5 14C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path>
+            </svg>
+        </button>
     </div>
+    <!-- Efecto glow -->
+    <div class="glow"></div>
+</form>
 
-    <a href="{% url 'AtencionInformatica:alumno_edit' alumno.id %}">Editar</a>
-    <a href="{% url 'AtencionInformatica:generate_docx' alumno.id %}" class="btn btn-success">Generar Folio</a>
+<!-- Mostrar mensaje de error si existe -->
+{% if error_message %}
+    <p>{{ error_message }}</p>
+{% endif %}
 
-    <h1>Últimos Registros</h1>
-    <form id="records-form" method="post" action="{% url 'AtencionInformatica:add_record_to_db' %}">
-        {% csrf_token %}
-        <div id="latest-records">
-            {% for record in records %}
-                <div>
-                    <input type="checkbox" name="record" value="{{ record|join:',' }}">
-                    {{ record.1 }} {{ record.9 }} - {{ record.2 }} <!-- Ajustar según las columnas de tus datos -->
-                </div>
+<!-- Mostrar la lista de alumnos solo si se ha activado la búsqueda -->
+{% if buscar_activado %}
+    <h2>Lista de Alumnos</h2>
+    <ul class="custom-list">
+        {% if alumnos %}
+            <!-- Mostrar los alumnos si hay resultados -->
+            {% for alumno_item in alumnos %}
+                <li class="custom-list-item">
+                    <a href="{% url 'AtencionInformatica:index' %}?id={{ alumno_item.id }}">
+                        {{ alumno_item.nombre }} {{ alumno_item.apellido }} - Fecha: {{ alumno_item.fecha|date:"d/m/Y" }}
+                    </a>
+                </li>
             {% endfor %}
+        {% else %}
+            <!-- Mostrar mensaje si no hay resultados -->
+            <li>No se encontraron alumnos.</li>
+        {% endif %}
+    </ul>
+{% endif %}
+
+<!-- Mostrar detalles del alumno seleccionado si existe -->
+{% if alumno %}
+    <div id="content" class="container">
+        <h1>Atención Alumnos</h1>
+        <table class="alumnosTabla">
+            <tr>
+                <th>Nombre</th>
+                <td>{{ alumno.nombre }}</td>
+            </tr>
+            <tr>
+                <th>Apellido</th>
+                <td>{{ alumno.apellido }}</td>
+            </tr>
+            <tr>
+                <th>Boleta</th>
+                <td>{{ alumno.boleta }}</td>
+            </tr>
+            <tr>
+                <th>Plan</th>
+                <td>{{ alumno.plan }}</td>
+            </tr>
+            <tr>
+                <th>Asunto</th>
+                <td>{{ alumno.asunto }}</td>
+            </tr>
+            <tr>
+                <th>Tipo</th>
+                <td>{{ alumno.tipo }}</td>
+            </tr>
+            <tr>
+                <th>Descripción</th>
+                <td>{{ alumno.descripcion }}</td>
+            </tr>
+        </table>
+        <div class="navigation">
+            <div class="button-container">
+                <!-- Botón Anterior -->
+                {% if prev_alumno %}
+                    <button class="btn btn-primary activado r" onclick="window.location.href='?id={{ prev_alumno.id }}'">Anterior</button>
+                {% else %}
+                    <button class="btn btn-primary desactivado r" disabled>Anterior</button>
+                {% endif %}
+                
+                <!-- Botón Siguiente -->
+                {% if next_alumno %}
+                    <button class="btn btn-primary activado r" onclick="window.location.href='?id={{ next_alumno.id }}'">Siguiente</button>
+                {% else %}
+                    <button class="btn btn-primary desactivado r" disabled>Siguiente</button>
+                {% endif %}
+                
+                <!-- Botones de Acción -->
+                <button class="action-button r" onclick="window.location.href='{% url 'AtencionInformatica:alumno_edit' alumno.id %}'">Editar</button>
+                <button class="action-button r" onclick="window.location.href='{% url 'AtencionInformatica:generate_docx' alumno.id %}'">Descargar Folio</button>
+            </div>
         </div>
-        <button type="submit">Agregar Seleccionados</button>
-    </form>
+    </div>
+{% elif not query and not alumno %}
+    <!-- Mensaje cuando no hay alumno seleccionado y no hay búsqueda -->
+    <p>No se encontró el alumno seleccionado.</p>
+{% endif %}
 
-    <!-- Opción 1: Usar un enlace -->
-    <a href="" class="btn btn-primary">Actualizar</a>
+<!-- Formulario para agregar registros -->
+<h1>Últimos Registros</h1>
+<form method="post" action="{% url 'AtencionInformatica:add_record_to_db' %}">
+    {% csrf_token %}
+    {% for record in records %}
+        {% if forloop.first %}
+            <!-- Este es el primer elemento, usado como encabezado -->
+            <div class="checkbox-wrapper">
+                <label class="label encabezadoT">
+                    <span><strong>{{ record.1 }} {{ record.9 }} - {{ record.2 }}</strong></span>
+                </label>
+            </div>
+        {% else %}
+            <!-- Los demás elementos se renderizan como checkboxes -->
+            <div class="checkbox-wrapper">
+                <input type="checkbox" class="check" id="check{{ forloop.counter }}" name="record" value="{{ record|join:',' }}">
+                <label for="check{{ forloop.counter }}" class="label">
+                    <svg width="45" height="45" viewBox="0 0 95 95">
+                        <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                        <g transform="translate(0,-952.36222)">
+                            <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                        </g>
+                    </svg>
+                    <span>{{ record.1 }} {{ record.9 }} - {{ record.2 }}</span>
+                </label>
+            </div>
+        {% endif %}
+    {% endfor %}
+    <!-- Botón de acción -->
+    <button class="action-button" type="submit">
+        {% if alumno %}
+            Agregar Seleccionados
+        {% else %}
+            Regresar
+        {% endif %}
+    </button>
+</form>
 
-    <!-- Opción 2: Usar un botón con JavaScript -->
-    <!--<button onclick="window.location.reload();" class="btn btn-primary">Actualizar</button>-->
+<!-- Botón Actualizar -->
+{% if alumno %}
+    <button class="action-button" onclick="window.location.reload();">Actualizar</button>
+{% endif %}
+
+{% endblock %}
+
+<script src="{% static 'AtencionInformatica/js/script.js' %}"></script>
 </body>
 </html>
-
-

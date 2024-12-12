@@ -1,47 +1,84 @@
+from django.db.models import Q
+from .models import Equivalencias2021
+from django.core.exceptions import ValidationError
 import requests
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 from django.conf import settings
 from django.http import HttpResponse
-from .models import Alumno
-from .forms import AlumnoForm
+from .models import Alumno, Equivalencias2010, Equivalencias2021, EntrePlanes
+from .forms import AlumnoForm, Equivalencias2010Form, Equivalencias2021Form, EntrePlanesForm
 from docx import Document
 import os
-import json
 from django.utils import timezone
+from django.db.models import Q
+
+GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxK1mG1xFjrX-8fyouZfdSoZpVn6CAVk4kTGYFWv-PmBykd-IRRnwtABq8FI8i1njd6/exec'
+
+# -------------------------------
+# Vistas para el modelo Alumno
+# -------------------------------
+
 
 def index(request):
+    query = request.GET.get('q')
     alumno_id = request.GET.get('id')
+
+    # Bandera para la búsqueda
+    buscar_activado = False
+
+    # Lista para almacenar los alumnos
+    if query:
+        # Activar la bandera de búsqueda
+        buscar_activado = True
+
+        # Filtrar los alumnos según la consulta
+        alumnos = Alumno.objects.filter(
+            Q(nombre__icontains=query) |
+            Q(apellido__icontains=query) |
+            Q(boleta__icontains=query) |
+            Q(plan__icontains=query) |
+            Q(asunto__icontains=query) |
+            Q(tipo__icontains=query) |
+            Q(descripcion__icontains=query)
+        )
+    else:
+        # Si no hay consulta, obtener todos los alumnos
+        alumnos = Alumno.objects.all()
+
+    # Si se ha proporcionado un ID específico, se obtiene ese alumno
     if alumno_id:
         alumno = get_object_or_404(Alumno, id=alumno_id)
     else:
-        alumno = Alumno.objects.last()
+        # Seleccionar el último alumno como predeterminado si no se proporciona un ID
+        alumno = alumnos.last() if alumnos else None
 
-    next_alumno = Alumno.objects.filter(id__gt=alumno.id).order_by('id').first()
-    prev_alumno = Alumno.objects.filter(id__lt=alumno.id).order_by('-id').first()
+    # Navegación entre registros
+    next_alumno = Alumno.objects.filter(id__gt=alumno.id).order_by(
+        'id').first() if alumno else None
+    prev_alumno = Alumno.objects.filter(id__lt=alumno.id).order_by(
+        '-id').first() if alumno else None
 
-    # Obtener los últimos registros
+    # Obtener los últimos registros desde Google Sheets
     try:
         response = requests.get(GOOGLE_SCRIPT_URL)
         response.raise_for_status()
         records = response.json()
-
-        # Verifica que la estructura del JSON sea la esperada
-        if not isinstance(records, list) or len(records) == 0:
-            raise ValueError("JSON no contiene una lista o está vacío")
-        if not isinstance(records[0], list):
-            raise ValueError("El primer elemento del JSON no es una lista")
     except (requests.exceptions.RequestException, ValueError) as e:
         print(f"Error fetching records: {e}")
         records = []
 
+    # Contexto para renderizar en la plantilla
     context = {
+        'alumnos': alumnos,  # Pasar la lista completa de alumnos al contexto
         'alumno': alumno,
         'next_alumno': next_alumno,
         'prev_alumno': prev_alumno,
-        'records': records,  # Asegúrate de incluir 'records' en el contexto
+        'records': records,
+        'buscar_activado': buscar_activado,  # Pasar la bandera al contexto
     }
     return render(request, 'index.html', context)
+
 
 def alumno_edit(request, id):
     alumno = get_object_or_404(Alumno, id=id)
@@ -54,97 +91,209 @@ def alumno_edit(request, id):
         form = AlumnoForm(instance=alumno)
     return render(request, 'alumno_edit.html', {'form': form})
 
+
 def generate_docx(request, id):
     alumno = get_object_or_404(Alumno, id=id)
-    
+
     # Cargar la plantilla de Word
-    doc_path = os.path.join(settings.BASE_DIR, 'AtencionInformatica', 'templates', 'atencionalumnos', 'Plantilla.docx')
+    doc_path = os.path.join(settings.BASE_DIR, 'AtencionInformatica',
+                            'templates', 'atencionalumnos', 'Plantilla.docx')
     doc = Document(doc_path)
-    
+
     # Reemplazar los valores en la plantilla
+    replacements = {
+        '{id}': str(alumno.id),
+        '{nombre}': alumno.nombre,
+        '{apellido}': alumno.apellido,
+        '{fecha}': alumno.fecha.strftime('%d/%m/%Y'),
+        '{boleta}': str(alumno.boleta),
+        '{email}': alumno.email,
+        '{telefono}': alumno.telefono,
+        '{plan}': str(alumno.plan),
+        '{asunto}': alumno.asunto,
+        '{tipo}': alumno.tipo,
+        '{descripcion}': alumno.descripcion,
+    }
+
     for p in doc.paragraphs:
-        if '{id}' in p.text:
-            p.text = p.text.replace('{id}', str(alumno.id))
-        if '{nombre}' in p.text:
-            p.text = p.text.replace('{nombre}', alumno.nombre)
-        if '{apellido}' in p.text:
-            p.text = p.text.replace('{apellido}', alumno.apellido)
-        if '{fecha}' in p.text:
-            p.text = p.text.replace('{fecha}', alumno.fecha.strftime('%d/%m/%Y'))
-        if '{boleta}' in p.text:
-            p.text = p.text.replace('{boleta}', str(alumno.boleta))
-        if '{email}' in p.text:
-            p.text = p.text.replace('{email}', alumno.email)
-        if '{telefono}' in p.text:
-            p.text = p.text.replace('{telefono}', alumno.telefono)
-        if '{plan}' in p.text:
-            p.text = p.text.replace('{plan}', str(alumno.plan))
-        if '{asunto}' in p.text:
-            p.text = p.text.replace('{asunto}', alumno.asunto)
-        if '{tipo}' in p.text:
-            p.text = p.text.replace('{tipo}', alumno.tipo)
-        if '{descripcion}' in p.text:
-            p.text = p.text.replace('{descripcion}', alumno.descripcion)
-    
+        for key, value in replacements.items():
+            if key in p.text:
+                p.text = p.text.replace(key, value)
+
     # Guardar el documento temporalmente
-    tmp_doc_path = os.path.join(settings.BASE_DIR, 'temp', f'alumno_{alumno.id}.docx')
+    tmp_doc_path = os.path.join(
+        settings.MEDIA_ROOT, f'alumno_{alumno.id}.docx')
     doc.save(tmp_doc_path)
 
-    # Leer el archivo de Word y enviarlo como respuesta
+    # Leer el archivo de Word y enviarlo como respuesta para descarga
     with open(tmp_doc_path, 'rb') as doc_file:
-        response = HttpResponse(doc_file.read(), content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+        response = HttpResponse(doc_file.read(
+        ), content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
         response['Content-Disposition'] = f'attachment; filename="alumno_{alumno.id}.docx"'
-    
+
     # Eliminar el documento temporal
-    try:
-        os.remove(tmp_doc_path)
-    except PermissionError:
-        pass
+    os.remove(tmp_doc_path)
 
     return response
 
-GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxK1mG1xFjrX-8fyouZfdSoZpVn6CAVk4kTGYFWv-PmBykd-IRRnwtABq8FI8i1njd6/exec'  # Reemplaza con la URL de tu script
 
 def add_record_to_db(request):
     if request.method == 'POST':
         records = request.POST.getlist('record')
         for record in records:
             fields = record.split(',')
-            try:
-                Alumno.objects.create(
-                    nombre=fields[1],
-                    apellido=fields[9],
-                    fecha=timezone.now(),
-                    boleta=int(fields[2]),  # Verifica que boleta sea un número entero
-                    email=fields[8],
-                    telefono=fields[3],
-                    plan=int(fields[4]),  # Verifica que plan sea un número entero
-                    asunto=fields[5],
-                    tipo=fields[6],
-                    descripcion=fields[7]
-                )
-            except (ValueError, IndexError) as e:
-                print(f"Error creating Alumno: {e}")
-                return render(request, 'AtencionInformatica/error.html', {'message': f'Error creating Alumno: {e}'})
-        return redirect('AtencionInformatica:index')
+            if len(fields) < 10:
+                return render(request, 'error.html', {'message': 'Error: El registro no tiene suficientes campos.'})
 
-    return render(request, 'AtencionInformatica/error.html', {'message': 'Invalid request method.'})
+            try:
+                # Asignar los valores a las variables de acuerdo con el orden proporcionado
+                # "Marca temporal" está en fields[0] y se ignora
+                nombre = fields[1]
+                boleta_value = fields[2]
+                telefono = fields[3]
+                plan_value = fields[4]
+                asunto = fields[5]
+                tipo = fields[6]
+                descripcion = fields[7]
+                email = fields[8]
+                apellido = fields[9]
+
+                # Verificar que 'boleta' sea un número y esté dentro del rango permitido
+                if not boleta_value.isdigit():
+                    return render(request, 'error.html', {'message': 'Error: Boleta debe ser un número.'})
+
+                boleta = int(boleta_value)
+                if boleta < -9223372036854775808 or boleta > 9223372036854775807:  # Rango para BigInteger
+                    return render(request, 'error.html', {'message': 'Error: Boleta fuera de rango permitido.'})
+
+                # Verificar que 'plan' sea un número
+                if plan_value.isdigit():
+                    plan = int(plan_value)
+                else:
+                    return render(request, 'error.html', {'message': 'Error: Plan debe ser un número.'})
+
+                # Crear un nuevo objeto Alumno
+                Alumno.objects.create(
+                    nombre=nombre,
+                    apellido=apellido,
+                    fecha=timezone.now(),
+                    boleta=boleta,
+                    email=email,
+                    telefono=telefono,
+                    plan=plan,
+                    asunto=asunto,
+                    tipo=tipo,
+                    descripcion=descripcion
+                )
+            except (ValueError, IndexError, ValidationError) as e:
+                print(f"Error creating Alumno: {e}")
+                return render(request, 'error.html', {'message': f'Error creating Alumno: {e}'})
+        return redirect('AtencionInformatica:index')
+    else:
+        return render(request, 'error.html', {'message': 'Invalid request method'})
+
 
 def fetch_latest_records(request):
     try:
         response = requests.get(GOOGLE_SCRIPT_URL)
-        response.raise_for_status()  # Levanta un error para códigos de estado HTTP 4xx/5xx
-        
-        try:
-            records = response.json()  # Decodifica el JSON
-            # Verifica que la estructura del JSON sea la esperada
-            if not isinstance(records, list) or len(records) == 0:
-                raise ValueError("JSON does not contain a list or is empty")
-            if not isinstance(records[0], list):
-                raise ValueError("The first element of JSON is not a list")
-        except ValueError as e:  # Maneja errores de decodificación JSON
-            return render(request, 'AtencionInformatica/error.html', {'message': f'Error decoding JSON: {e}'})
-        
-        return render(request, 'AtencionInformatica/latest_records.html', {'records': records})
+        response.raise_for_status()
+        records = response.json()
+        return render(request, 'latest_records.html', {'records': records})
     except requests.exceptions.RequestException as e:
-        return render(request, 'AtencionInformatica/error.html', {'message': f'Error fetching records from Google Sheets: {e}'})
+        return render(request, 'error.html', {'message': f'Error fetching records from Google Sheets: {e}'})
+
+# -------------------------------------
+# Vistas para Equivalencias 2010
+# -------------------------------------
+
+
+def equivalencias_2010_list(request):
+    equivalencias = Equivalencias2010.objects.all()
+    return render(request, 'equivalencias/equivalencias_2010_list.html', {'equivalencias': equivalencias})
+
+
+def equivalencia_2010_add(request):
+    if request.method == 'POST':
+        form = Equivalencias2010Form(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('AtencionInformatica:equivalencias_2010_list')
+    else:
+        form = Equivalencias2010Form()
+    return render(request, 'equivalencias/equivalencias_2010_form.html', {'form': form})
+
+
+def equivalencias_2010_edit(request, id):
+    equivalencia = get_object_or_404(Equivalencias2010, id=id)
+    if request.method == 'POST':
+        form = Equivalencias2010Form(request.POST, instance=equivalencia)
+        if form.is_valid():
+            form.save()
+            return redirect('AtencionInformatica:equivalencias_2010_list')
+    else:
+        form = Equivalencias2010Form(instance=equivalencia)
+    return render(request, 'equivalencias/equivalencias_2010_form.html', {'form': form})
+
+# -------------------------------------
+# Vistas para Equivalencias 2021
+# -------------------------------------
+
+
+def equivalencias_2021_list(request):
+    equivalencias = Equivalencias2021.objects.all()
+    return render(request, 'equivalencias/equivalencias_2021_list.html', {'equivalencias': equivalencias})
+
+
+def equivalencias_2021_add(request):
+    if request.method == 'POST':
+        form = Equivalencias2021Form(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('AtencionInformatica:equivalencias_2021_list')
+    else:
+        form = Equivalencias2021Form()
+    return render(request, 'equivalencias/equivalencias_2021_form.html', {'form': form})
+
+
+def equivalencias_2021_edit(request, id):
+    equivalencia = get_object_or_404(Equivalencias2021, id=id)
+    if request.method == 'POST':
+        form = Equivalencias2021Form(request.POST, instance=equivalencia)
+        if form.is_valid():
+            form.save()
+            return redirect('AtencionInformatica:equivalencias_2021_list')
+    else:
+        form = Equivalencias2021Form(instance=equivalencia)
+    return render(request, 'equivalencias/equivalencias_2021_form.html', {'form': form})
+
+# -------------------------------------
+# Vistas para Equivalencias Entre Planes
+# -------------------------------------
+
+
+def entre_planes_list(request):
+    equivalencias = EntrePlanes.objects.all()
+    return render(request, 'equivalencias/entre_planes_list.html', {'equivalencias': equivalencias})
+
+
+def entre_planes_add(request):
+    if request.method == 'POST':
+        form = EntrePlanesForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('AtencionInformatica:entre_planes_list')
+    else:
+        form = EntrePlanesForm()
+    return render(request, 'equivalencias/entre_planes_form.html', {'form': form})
+
+
+def entre_planes_edit(request, id):
+    equivalencia = get_object_or_404(EntrePlanes, id=id)
+    if request.method == 'POST':
+        form = EntrePlanesForm(request.POST, instance=equivalencia)
+        if form.is_valid():
+            form.save()
+            return redirect('AtencionInformatica:entre_planes_list')
+    else:
+        form = EntrePlanesForm(instance=equivalencia)
+    return render(request, 'equivalencias/entre_planes_form.html', {'form': form})

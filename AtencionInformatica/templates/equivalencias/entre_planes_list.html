@@ -1,0 +1,45 @@
+{% load static %}
+
+{% include '../encabezado.html' %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'AtencionInformatica/css/styles_tablas.css' %}">
+    <h1>Lista de Equivalencias Entre Planes</h1>
+    <div class="button-container">
+        <a href="{% url 'AtencionInformatica:equivalencias_2021_add' %}" class="btn-12">
+            <span>Agregar nueva equivalencia</span>
+        </a>    
+        <ul class="button-group">
+            <li><button class="btn-17" onclick="window.location.href='{% url 'AtencionInformatica:equivalencias_2010_list' %}'"><span class="text-container">
+                <span class="text">2010</span>
+              </span></button></li>
+            <li><button class="btn-17" onclick="window.location.href='{% url 'AtencionInformatica:equivalencias_2021_list' %}'"><span class="text-container">
+                <span class="text">2021</span>
+              </span></button></li>
+        </ul>
+    </div>
+    <link rel="stylesheet" href="{% static 'AtencionInformatica/css/styles_tablas.css' %}">
+    <div class="container">
+        <div class="card">
+            <div class="card__title">Equivalencia</div>
+            <div class="card__data">
+                <div class="card__row">
+                    <div class="item">Nombre</div>
+                    <div class="item">Equivalencia</div>
+                    <div class="item">Carrera</div>
+                    <div class="item">Acciones</div>
+                </div>
+                {% for equivalencia in equivalencias %}
+                <div class="card__row">
+                    <div class="item">{{ equivalencia.nombre }}</div>
+                    <div class="item">{{ equivalencia.equivalencia }}</div>
+                    <div class="item">{{ equivalencia.carrera }}</div>
+                    <div class="item"><a href="{% url 'AtencionInformatica:equivalencia_entre_planes_edit' equivalencia.id %}">Editar</a></div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+</body>
+</html>

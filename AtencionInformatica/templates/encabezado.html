@@ -1,0 +1,47 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'AtencionInformatica/css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'AtencionInformatica/css/styles_inicio.css' %}">
+    <title>{% block title %}Sistema de Atención Alumnos{% endblock %}</title>
+    <link rel="icon" href="{% static 'AtencionInformatica/Images/Escudos/escudo_1_2.png' %}" type="image/png">
+</head>
+<body>
+    <header>
+        <div class="top-bar">
+            <div class="top-bar-left">
+                <img src="{% static 'AtencionInformatica/Images/logo_ipn_hor.png' %}" alt="Educación" class="top-logo">
+            </div>
+            <div class="top-bar-right">
+                <img src="{% static 'AtencionInformatica/Images/Ingeniería en Informática.png' %}" alt="IPN" class="top-logo-right">
+                <ul class="top-links">
+                    <li><a href="https://www.ipn.mx/assets/files/main/docs/inicio/calendarioIPN-Escolarizada.pdf" target="_blank">CALENDARIO</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="divnav">
+            <nav class="navbar">
+                <div class="logo-container">
+                    <img src="{% static 'AtencionInformatica/Images/Escudos/escudo 2.png' %}" alt="Escudo" class="logo">
+                </div>
+                <ul class="nav-links">
+                    <li><button onclick="window.location.href='{% url 'AtencionInformatica:index' %}'">INICIO</button></li>
+                    <li><button onclick="window.location.href='{% url 'AtencionInformatica:equivalencias_2021_list' %}'">EQUIVALENCIAS</button></li>
+                    <li><button onclick="window.location.href='https://www.canva.com/design/DAGAjHl6T3E/7cWwiJH2vOIiz7MwsWhtzg/view'">TRAYECTORIA IDEAL</button></li>
+                    <li><button onclick="window.location.href='https://proyectos.upiicsa.ipn.mx/atributosegreso/'">ATRIBUTOS DE EGRESO</button></li>
+                    <li><button onclick="window.location.href='https://www.saes.upiicsa.ipn.mx/Default.aspx?ReturnUrl=%2fAcademica%2fhorarios.aspx&AspxAutoDetectCookieSupport=1'">SAES</button></li>
+                </ul>
+            </nav>
+        </div>
+        <div class="title">
+            <h1>Unidad Profesional Interdisciplinaria de Ingeniería y Ciencias Sociales y Administrativas</h1>
+        </div>
+    </header>
+    {% block content %}
+
+    {% endblock %}
+</body>
+</html>

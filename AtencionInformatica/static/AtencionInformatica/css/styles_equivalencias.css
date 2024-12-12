@@ -1,0 +1,95 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+/*Parte Equivalencias*/
+
+form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+label {
+    margin-bottom: 5px;
+}
+
+select {
+    padding: 5px;
+    font-size: 16px;
+}
+
+#equivalencias {
+    grid-column: span 2;
+    margin-top: 20px;
+}
+
+.labels {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.labels label.equivalente {
+    margin-left: 50%;
+    transform: translateX(-150%);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    background-color: #f2a900;
+    color: rgb(0, 0, 0);
+}
+
+tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+tr:hover {
+    background-color: #f1f1f1;
+}
+
+@media (max-width: 768px){
+    th, td {
+        padding: 8px;
+    }
+}
+
+@media (max-width: 480px){
+    th, td {
+        box-sizing: border-box;
+        text-align: left;
+        padding: 8px;
+    }
+
+    thead {
+        display: none;
+    }
+
+    tr {
+        display: flex;
+        flex-direction: column;
+        border-bottom: 1px solid #ddd;
+    }
+
+    tr td:first-child {
+        background-color: #f2f2f2;
+        font-weight: bold;
+    }
+}

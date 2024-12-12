@@ -1,0 +1,229 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #ffffff;
+    padding: 10px 20px;
+    flex-wrap: wrap; /* Ensure it wraps on smaller screens */
+}
+
+.top-bar-left {
+    display: flex;
+    align-items: center;
+}
+
+.top-bar-right {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap; /* Ensure it wraps on smaller screens */
+    flex: 1; /* Allow top-bar-right to take up available space */
+    justify-content: flex-end; /* Align items to the end */
+}
+
+.top-logo {
+    height: 140px;
+    margin-right: 100px;
+}
+.top-logo-right {
+    height: 100px;
+    margin-right: 500px;
+}
+
+.top-links {
+    list-style: none;
+    display: flex;
+    margin: 0;
+    padding: 0;
+    flex-wrap: wrap; /* Ensure it wraps on smaller screens */
+}
+
+.top-links li {
+    margin: 0 10px;
+}
+
+.top-links a {
+    text-decoration: none;
+    color: #6A1236;
+    font-weight: bold;
+}
+
+header {
+    background-color: #6A1236;
+    padding: 10px 0;
+}
+
+.navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    background-color: #6A1236;
+    color: white;
+    
+}
+
+.navbar button {
+    background: none;
+    color: #f2f2f2;
+    border: none;
+    padding: 14px 16px;
+    font: inherit;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.navbar button:hover {
+    background-color: #00000062;
+    color: #f2f2f2;
+    border-radius: 10px;
+}
+
+.logo-container {
+    position: relative;
+    width: 70px;
+    height: 100px;
+    background: linear-gradient(to bottom, #e7dce2, #e7dce2);
+    clip-path: polygon(0 0, 100% 0, 100% 85%, 50% 100%, 0 85%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.logo {
+    width: 90%;
+    height: 90%;
+    object-fit: contain;
+}
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    margin: 0;
+    padding: 0;
+}
+
+
+.nav-links li {
+    margin: 0 10px;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: white;
+    font-weight: bold;
+}
+
+.title {
+    background-color: #454545;
+    text-align: center;
+    padding: 10px 20px;
+    color: white;
+}
+
+.title h1 {
+    margin: 0;
+    font-size: 20px;
+}
+.container {
+    width: 80%;
+    margin: 20px auto;
+    padding: 20px;
+    background: white;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+}
+/* Estilos del Modal */
+
+/* Responsive Design */
+
+@media (max-width: 768px) {
+    .top-bar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .top-bar-left {
+        margin-bottom: 10px;
+    }
+
+    .top-bar-right {
+        width: 100%; /* Ensure top-bar-right takes full width */
+        justify-content: flex-start;
+    }
+
+    .navbar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .logo-container {
+        margin-bottom: 10px;
+        width: 60px;
+        height: 95px;
+    }
+
+    .logo {
+        width: 80%;
+        height: 80%;
+    }
+
+    .nav-links {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .nav-links li {
+        margin: 5px 0;
+    }
+
+    .title h1 {
+        font-size: 18px;
+    }
+    .container {
+        width: 95%;
+        margin: 10px auto;
+        padding: 10px;
+    }
+
+    th, td {
+        padding: 8px;
+    }
+
+    .nav-button, .action-button {
+        margin: 5px 5px;
+        padding: 8px 10px;
+        font-size: 12px;
+    }
+}
+@media (max-width: 480px){
+    .top-bar {
+        padding: 10px;
+    }
+
+    .top-links {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .top-links li {
+        margin: 5px 0;
+    }
+
+    .logo-container {
+        width: 50px;
+        height: 80px;
+    }
+
+    .logo {
+        width: 70%;
+        height: 70%;
+    }
+
+    .title h1 {
+        font-size: 16px;
+    }
+}

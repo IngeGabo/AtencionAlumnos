@@ -8,6 +8,9 @@ django = "*"
 mysqlclient = "*"
 python-docx = "*"
 requests = "*"
+pywin32 = "*"
+pandas = "*"
+openpyxl = "*"
 
 [dev-packages]
 
